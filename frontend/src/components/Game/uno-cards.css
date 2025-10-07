@@ -1,0 +1,411 @@
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:900);
+
+.card {
+  width: 78px;
+  height: 100px;
+  float: left;
+  background: #fff;
+  border-radius: 5px;
+  display: table;
+  box-sizing: border-box;
+  padding: 5px;
+  margin: 10px;
+  font-family: "Source Sans Pro", sans-serif;
+  font-size: 36px;
+  text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, -1px 1px 0 #000000,
+    1px -1px 0 #000000, 1px 0 0 #000000, -1px 0 0 #000000, 0 -1px 0 #000000,
+    0 1px 0 #000000, 4px 4px 0 #000000;
+  box-shadow: 0 0 10px #aaaaaa;
+  text-align: center;
+  position: relative;
+}
+.card .inner {
+  display: table-cell;
+  vertical-align: middle;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.card .mark {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  margin: auto;
+  padding: 0 12px;       /* smaller padding to avoid wide cards */
+  min-width: 40px;       /* ensures consistent width */
+  height: 60px;          /* ensures consistent height */
+  border-radius: 50% / 50%; /* smooth oval */
+  line-height: 1.2;
+  font-weight: bold;
+}
+
+
+
+
+.card:before,
+.card:after {
+  display: inline-block;
+  position: absolute;
+  line-height: 0;
+  font-size: 20px;
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, -1px 1px 0 #000000,
+    1px -1px 0 #000000, 1px 0 0 #000000, -1px 0 0 #000000, 0 -1px 0 #000000,
+    0 1px 0 #000000, 2px 2px 0 #000000;
+}
+
+.card:before {
+  top: 15px;
+  left: 10px;
+}
+.card:after {
+  bottom: 15px;
+  right: 10px;
+  -webkit-transform: rotate(180deg);
+}
+
+.card.blue {
+  color: #0063b3;
+}
+
+.card.wild {
+  color: #000000;
+}
+
+
+.card.black {
+    color: rgb(0, 0, 0);
+}
+
+.card.wild .inner {
+    background: black;
+}
+
+.card.blue .inner {
+  background: #0063b3;
+}
+
+.card.green {
+  color: #18a849;
+}
+
+.card.green .inner {
+  background: #18a849;
+}
+
+.card.red {
+  color: #c72a18;
+}
+
+.card.red .inner {
+  background: #c72a18;
+}
+
+.card.yellow {
+  color: #e6ca1e;
+}
+
+.card.yellow .inner {
+  background: #e6ca1e;
+}
+
+.card.num-0:before,
+.card.num-0:after {
+  content: "0";
+}
+
+.card.num-1:before,
+.card.num-1:after {
+  content: "1";
+}
+
+.card.num-2:before,
+.card.num-2:after {
+  content: "2";
+}
+
+.card.num-3:before,
+.card.num-3:after {
+  content: "3";
+}
+
+.card.num-4:before,
+.card.num-4:after {
+  content: "4";
+}
+
+.card.num-5:before,
+.card.num-5:after {
+  content: "5";
+}
+
+.card.num-6:before,
+.card.num-6:after {
+  content: "6";
+  
+  
+}
+
+.card.num-7:before,
+.card.num-7:after {
+  content: "7";
+}
+
+.card.num-8:before,
+.card.num-8:after {
+  content: "8";
+}
+
+.card.num-9:before,
+.card.num-9:after {
+  content: "9";
+}
+
+.card.num-R:before,
+.card.num-R:after{
+  content: "R"
+}
+
+.card.num-S:before,
+.card.num-S:after{
+  content: "S"
+}
+
+.card.num-D2:before,
+.card.num-D2:after{
+  content: "+2"
+}
+
+.card.num-D4:before,
+.card.num-D4:after{
+  content: "+4"
+}
+
+/* .card.num-draw:before,
+.card.num-draw:after{
+  content: "D"
+} */
+
+.card.discard-pile:before,
+.card.discard:after{
+    content: ''
+}
+
+
+.card.num-6 .mark:after,
+.card.num-9 .mark:after {
+  content: "";
+  display: block;
+  position: absolute;     /* use absolute positioning inside card */
+  top: 32%;               /* vertically center */
+  left: 50%;              /* horizontally center */
+  transform: translate(-50%, -50%);  /* perfect centering */
+  width: 35%;             /* smaller width so it doesn’t stick out */
+  height: 4px;
+  background: currentColor;  /* matches the card’s color */
+  border-radius: 0px;
+  box-shadow: 1px 2px 0 #000000;
+}
+
+.wild-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.wild-picker {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  min-width: 320px;
+}
+
+.wild-picker h2 {
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+}
+
+.wild-picker-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.wild-choice {
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.wild-choice.red {
+  background: #c72a18;
+}
+
+.wild-choice.blue {
+  background: #0063b3;
+}
+
+.wild-choice.green {
+  background: #18a849;
+}
+
+.wild-choice.yellow {
+  background: #e6ca1e;
+  color: #333333;
+}
+
+.wild-choice.cancel {
+  background: #444444;
+  color: #ffffff;
+  width: 100%;
+}
+
+.wild-choice:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.uno-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  pointer-events: none;
+}
+
+.uno-banner {
+  background: #ff4136;
+  color: #ffffff;
+  padding: 16px 32px;
+  border-radius: 999px;
+  font-size: 2rem;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+  animation: uno-flash 0.4s ease-in-out alternate 6;
+}
+
+@keyframes uno-flash {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.08);
+    opacity: 0.75;
+  }
+}
+
+.card.num-6.blue .mark:after,
+.card.num-9.blue .mark:after {
+  background: #0063b3;
+}
+.card.num-6.green .mark:after,
+.card.num-9.green .mark:after {
+  background: #18a849;
+}
+.card.num-6.red .mark:after,
+.card.num-9.red .mark:after {
+  background: #c72a18;
+}
+
+.card.num-6.yellow .mark:after,
+.card.num-9.yellow .mark:after {
+  background: #e6ca1e;
+}
+
+.card.num-D4.wild .mark:after,
+.card.num-D4.wild .mark:after{
+  background: #ffffff;
+}
+
+
+/* Wild card */
+.card.num-WILD.wild:before,
+.card.num-WILD.wild:after {
+  content: "W";
+}
+
+/* Wild card background: 4-color diagonal stripes */
+.card.wild .inner {
+  background: linear-gradient(135deg,
+    red 0% 25%,
+    yellow 25% 50%,
+    green 50% 75%,
+    blue 75% 100%);
+  color: white;
+  font-weight: bold;
+}
+
+
+/* +4 card */
+.card.num-D4.wild:before,
+.card.num-D4.wild:after {
+  content: "+4";
+}
+
+.card.num-D4.wild .inner {
+  background: black;
+  color: white;
+}
+
+/* 
+.card.back {
+  background: linear-gradient(135deg, red, yellow, black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.card.back::after {
+  content: "UNO";
+  font-size: 30px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 2px 2px 4px #000;
+} */
+
+
+.card.back {
+  width: 78px;
+  height: 100px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, red, yellow, rgb(255, 255, 255));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Source Sans Pro", sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 2px 2px 4px #000;
+  border: 6px solid black;
+  box-shadow: 0 0 10px #aaaaaa;
+  position: relative;
+}
+
+
+/* Disable inherited pseudo-elements for back card */
+.card.back::before,
+.card.back::after {
+  content: none !important;
+}
