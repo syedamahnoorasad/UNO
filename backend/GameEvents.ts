@@ -128,6 +128,17 @@ function buildDeck() {
 
 const WILD_VALUES = new Set(["WILD", "D4"]);
 
+export function buildTurnMessage(playerName: string): string {
+  const trimmed = (playerName ?? "").trim();
+  if (!trimmed) {
+    return "Waiting for the next turn...";
+  }
+
+  const needsOnlyApostrophe = /s$/i.test(trimmed);
+  const suffix = needsOnlyApostrophe ? "'" : "'s";
+  return `${trimmed}${suffix} turn!`;
+}
+
 
 // export function initializeGame(players, GameSession) {
 //   GameSession.deck = buildDeck();
@@ -303,15 +314,32 @@ export function game_start(socket, io, players, GameSession, sockets) {
 
     io.emit("proceed-to-game", "");
 
-    for (const p of players) {
-      io.to(p.socket.id).emit("hand", p.hand);
-      io.to(p.socket.id).emit("yourName", p.name);
-    }
+    const roster = players.map((p, index) => ({
+      name: p.name,
+      seat: index + 1,
+    }));
+
+    players.forEach((p, index) => {
+      const socketId = p.socket?.id;
+      if (!socketId) {
+        return;
+      }
+
+      io.to(socketId).emit("hand", p.hand);
+      io.to(socketId).emit("yourName", {
+        name: p.name,
+        seat: index + 1,
+        roster,
+      });
+    });
+
+    io.emit("player-order", roster);
 
     io.emit("discardPile", GameSession.discardPile.at(-1));
     io.emit("deckCount", GameSession.deck.length);
 
-    io.emit("turn", `Take your turn, ${players[GameSession.currentPlayer].name}!`);
+    const openingPlayer = players[GameSession.currentPlayer]?.name;
+    io.emit("turn", buildTurnMessage(openingPlayer));
   });
 }
 
@@ -319,7 +347,7 @@ export function game_start(socket, io, players, GameSession, sockets) {
 
 function advanceTurn(io, GameSession, players) {
   const currentPlayer = GameSession.players[GameSession.currentPlayer];
-  io.emit("turn", `It's ${currentPlayer.name}'s turn`);
+  io.emit("turn", buildTurnMessage(currentPlayer?.name));
 }
 
 export function playCard(
@@ -578,4 +606,3 @@ export function resetGameSession(GameSession, players) {
 
   
   
-

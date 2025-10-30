@@ -15,7 +15,8 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    align-items: center;
+    align-items: stretch;
+    gap: 24px;
 }
 
 .right-side-container {
@@ -24,30 +25,43 @@ body {
 }
 
 .messages-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     height: 40%;
+    width: 100%;
+    max-width: 360px;
 }
 
 .message-box {
     height: 400px;
-    width: 300px;
-    border: 1px solid #36454F;
-    border-radius: 20px;
-    padding: 20px;
+    width: 100%;
+    border-radius: 16px;
+    padding: 16px;
     display: flex;
-    flex-direction: column-reverse;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
     overflow-y: auto;
     overflow-x: hidden;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(54, 69, 79, 0.2);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    scroll-behavior: smooth;
 }
 
 .message-content-container {
-    border: 1px solid #36454F;
+    border: none;
     display: flex;
+    align-items: center;
     width: 100%;
     border-radius: 10px;
-    padding: 10px;
-    height: fit-content;
-    margin-top: 8px;
+    padding: 12px 14px;
+    min-height: 44px;
+    background: rgba(99, 199, 99, 0.12);
+    color: #0f172a;
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(99, 199, 99, 0.3);
 }
 
 .my-cards-container {
@@ -137,18 +151,21 @@ body {
 
 .player-tag {
     text-align: center;
-    width: 100px;
-    color: #96e296;
-    padding: 5px 0;
+    width: 130px;
+    color: #f0fff0;
+    padding: 12px 8px;
     margin-left: 10px;
     box-sizing: border-box;
-    border: 2px solid #96e296;
-    border-radius: 5px;
+    border: 2px solid rgba(150, 226, 150, 0.9);
+    border-radius: 12px;
     margin-top: 15px;
-    text-overflow: ellipsis;
-    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     overflow: hidden;
     position: relative;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(2px);
 }
 
 .card-area-rows {
@@ -219,4 +236,61 @@ body {
     top: 44%;
     left: 89%;
     rotate: 90deg;
+}
+
+.player-tag-self {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
+}
+
+.player-label {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.player-name {
+    font-size: 16px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.messages-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.messages-header h1 {
+    margin: 0;
+}
+
+.messages-welcome {
+    margin: 0;
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.message-banner {
+    width: 100%;
+    border-radius: 12px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(255, 215, 64, 0.95), rgba(255, 161, 22, 0.9));
+    color: #3f3d56;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.message-placeholder {
+    margin: auto;
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
 }

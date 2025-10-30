@@ -6,7 +6,14 @@ import { Server, Socket } from "socket.io";
 import cors from "cors";
 
 import home, { resetLobbyState } from "./HomePage";
-import { game_start, playCard, checkForUno, pass, resetGameSession } from "./GameEvents";
+import {
+  game_start,
+  playCard,
+  checkForUno,
+  pass,
+  resetGameSession,
+  buildTurnMessage,
+} from "./GameEvents";
 
 const app = express();
 app.use(cors());
@@ -92,7 +99,7 @@ io.on("connection", (socket: Socket) => {
 
     if (playerIndex !== GameSession1.currentPlayer) {
       const currentName = GameSession1.players[GameSession1.currentPlayer]?.name || "another player";
-      io.to(socket.id).emit("turn", `It's ${currentName}'s turn`);
+      io.to(socket.id).emit("turn", buildTurnMessage(currentName));
       return;
     }
 
@@ -142,7 +149,7 @@ io.on("connection", (socket: Socket) => {
 
     if (playerIndex !== GameSession1.currentPlayer) {
       const currentName = GameSession1.players[GameSession1.currentPlayer]?.name || "another player";
-      io.to(socket.id).emit("turn", `It's ${currentName}'s turn`);
+      io.to(socket.id).emit("turn", buildTurnMessage(currentName));
       return;
     }
 

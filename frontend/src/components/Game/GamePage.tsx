@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import "./uno.css";
 import "./uno-cards.css";
@@ -11,6 +11,13 @@ interface CardData {
   value: string;
 }
 
+interface PlayerSeatInfo {
+  name: string;
+  seat: number;
+}
+
+type YourNamePayload = string | string[] | { name?: string; seat?: number; roster?: PlayerSeatInfo[] };
+
 interface GameEventsProps {
   socket: Socket<DefaultEventsMap, DefaultEventsMap>;
 }
@@ -18,73 +25,115 @@ interface GameEventsProps {
 function Game({ socket }: GameEventsProps) {
   const [hand, setHand] = useState<CardData[]>([]);
   const [discard, setDiscard] = useState<CardData | null>(null);
-  const [deck, setDeck] = useState<CardData | null>(null);
 
-  const [name, setName] = useState("");
-  const [players, setPlayers] = useState<string[]>([]);
-  const [message, setMessage] = useState("Lets Start with Player 1");
-  const [username, setUsername] = useState("Welcome to Uno");
+  const [playerInfo, setPlayerInfo] = useState<PlayerSeatInfo | null>(null);
+  const [playerOrder, setPlayerOrder] = useState<PlayerSeatInfo[]>([]);
+  const [messages, setMessages] = useState<string[]>([]);
   const [wildSelection, setWildSelection] = useState<number | null>(null);
   const [unoWinner, setUnoWinner] = useState<string | null>(null);
   const [colorMessage, setColorMessage] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const messageListRef = useRef<HTMLDivElement | null>(null);
+
+  const appendMessage = useCallback((text: string) => {
+    const clean = (text ?? "").trim();
+    if (!clean) {
+      return;
+    }
+
+    setMessages((previous) => [...previous, clean]);
+  }, []);
 
   // --- socket listeners
   useEffect(() => {
-    socket.on("turn", (msg: string) => {
+    const handleTurn = (msg: string) => {
       console.log(msg);
-      setMessage(msg);
-    });
+      appendMessage(msg);
+    };
 
-    socket.on("card-unplayable", (msg: string) => {
+    const handleCardUnplayable = (msg: string) => {
       console.log(msg);
-      setMessage(msg);
-    });
+      appendMessage(msg);
+    };
 
-    socket.on("winner", (msg: string) => {
+    const handleWinner = (msg: string) => {
       console.log(msg);
-      setMessage(msg);
+      appendMessage(msg);
       setWildSelection(null);
       navigate("/finish", { state: { winner: msg } });
-    });
+    };
 
-    socket.on("first-person", (msg: string) => {
+    const handleFirstPerson = (msg: string) => {
       console.log(msg);
-      setMessage(msg);
-    });
+      appendMessage(msg);
+    };
 
-    socket.on("username", (msg: string) => {
-      const welcome = "Welcome " + msg;
-      setUsername(welcome);
-    });
-
-    socket.on("hand", (handData: CardData[]) => {
+    const handleHand = (handData: CardData[]) => {
       console.log("I received the hand", handData);
       setHand(handData);
-    });
+    };
 
-    socket.on("discardPile", (card: CardData) => {
+    const handleDiscardPile = (card: CardData) => {
       console.log("Display discard pile", card);
       setDiscard(card);
-    });
+    };
 
-    socket.on("deckTop", (card: CardData) => {
-      console.log("Deck top", card);
-      setDeck(card);
-    });
+    const normalizeRoster = (roster?: PlayerSeatInfo[]) => {
+      if (!Array.isArray(roster)) {
+        return;
+      }
 
-    socket.on("yourName", (playerName: string) => {
-      console.log("Display your name");
-      setName(playerName);
-    });
+      const sanitized = roster
+        .filter(
+          (entry): entry is PlayerSeatInfo =>
+            !!entry && typeof entry.name === "string" && typeof entry.seat === "number"
+        )
+        .sort((a, b) => a.seat - b.seat);
 
-    socket.on("otherPlayerNames", (others: string[]) => {
-      console.log("Display other player names", others);
-      setPlayers(others);
-    });
+      setPlayerOrder(sanitized);
+    };
 
-    socket.on("color-picked", (payload: { player?: string; color?: string }) => {
+    const handleYourName = (payload: YourNamePayload) => {
+      console.log("Display your name", payload);
+
+      if (Array.isArray(payload)) {
+        const [first] = payload;
+        if (typeof first === "string") {
+          setPlayerInfo((prev) => ({
+            name: first,
+            seat: prev?.seat ?? 1,
+          }));
+        }
+        return;
+      }
+
+      if (typeof payload === "string") {
+        setPlayerInfo((prev) => ({
+          name: payload,
+          seat: prev?.seat ?? 1,
+        }));
+        return;
+      }
+
+      if (payload && typeof payload === "object") {
+        const { name: playerName, seat, roster } = payload;
+        if (playerName) {
+          setPlayerInfo({
+            name: playerName,
+            seat: typeof seat === "number" ? seat : 1,
+          });
+        }
+        normalizeRoster(roster);
+      }
+    };
+
+    const handlePlayerOrder = (order: PlayerSeatInfo[]) => {
+      console.log("Display player order", order);
+      normalizeRoster(order);
+    };
+
+    const handleColorPicked = (payload: { player?: string; color?: string }) => {
       if (!payload?.color) {
         return;
       }
@@ -92,31 +141,49 @@ function Game({ socket }: GameEventsProps) {
       const announcer = payload.player ? `${payload.player} chose` : "Color chosen";
       const announcement = `${announcer} ${colorName}`;
       setColorMessage(announcement);
-      setMessage(announcement);
-    });
+      appendMessage(announcement);
+    };
 
-    socket.on("uno", (payload: { winner: string }) => {
+    const handleUno = (payload: { winner: string }) => {
       const winnerName = payload?.winner ?? "A player";
       setUnoWinner(winnerName);
-      setMessage(`UNO! ${winnerName} wins!`);
-    });
+      const announcement = `UNO! ${winnerName} wins!`;
+      appendMessage(announcement);
+    };
+
+    socket.on("turn", handleTurn);
+    socket.on("card-unplayable", handleCardUnplayable);
+    socket.on("winner", handleWinner);
+    socket.on("first-person", handleFirstPerson);
+    socket.on("hand", handleHand);
+    socket.on("discardPile", handleDiscardPile);
+    socket.on("yourName", handleYourName);
+    socket.on("player-order", handlePlayerOrder);
+    socket.on("color-picked", handleColorPicked);
+    socket.on("uno", handleUno);
 
     // ✅ cleanup all listeners on unmount
     return () => {
-      socket.off("turn");
-      socket.off("card-unplayable");
-      socket.off("winner");
-      socket.off("first-person");
-      socket.off("username");
-      socket.off("hand");
-      socket.off("discardPile");
-      socket.off("deckTop");
-      socket.off("yourName");
-      socket.off("otherPlayerNames");
-      socket.off("color-picked");
-      socket.off("uno");
+      socket.off("turn", handleTurn);
+      socket.off("card-unplayable", handleCardUnplayable);
+      socket.off("winner", handleWinner);
+      socket.off("first-person", handleFirstPerson);
+      socket.off("hand", handleHand);
+      socket.off("discardPile", handleDiscardPile);
+      socket.off("yourName", handleYourName);
+      socket.off("player-order", handlePlayerOrder);
+      socket.off("color-picked", handleColorPicked);
+      socket.off("uno", handleUno);
     };
-  }, [socket, navigate]);
+  }, [socket, navigate, appendMessage]);
+
+  useEffect(() => {
+    const container = messageListRef.current;
+    if (!container) {
+      return;
+    }
+    container.scrollTop = container.scrollHeight;
+  }, [messages]);
 
   useEffect(() => {
     if (!unoWinner) return;
@@ -167,6 +234,28 @@ function Game({ socket }: GameEventsProps) {
   const cancelWildSelection = () => {
     setWildSelection(null);
   };
+
+  const rosterBySeat = useMemo(() => {
+    const map = new Map<number, PlayerSeatInfo>();
+
+    playerOrder.forEach((entry) => {
+      if (entry && typeof entry.seat === "number" && entry.name) {
+        map.set(entry.seat, entry);
+      }
+    });
+
+    if (playerInfo?.name && typeof playerInfo.seat === "number") {
+      map.set(playerInfo.seat, {
+        name: playerInfo.name,
+        seat: playerInfo.seat,
+      });
+    }
+
+    return map;
+  }, [playerOrder, playerInfo]);
+
+  const seatClasses = ["player-one", "player-two", "player-three", "player-four"];
+  const welcomeHeading = playerInfo?.name ? `Welcome to UNO, ${playerInfo.name}!` : "Welcome to UNO!";
 
   return (
     <div className="GamePage">
@@ -221,18 +310,29 @@ function Game({ socket }: GameEventsProps) {
                 {/* Deck pile (face-down) */}
                 <div className="card back">UNO</div>
               </div>
-              <div className="game-players-container">
-                <div className="player-tag player-one">{name}</div>
-              </div>
-              <div className="game-players-container">
-                <div className="player-tag player-two">{players[0]}</div>
-              </div>
-              <div className="game-players-container">
-                <div className="player-tag player-three">{players[1]}</div>
-              </div>
-              <div className="game-players-container">
-                <div className="player-tag player-four">{players[2]}</div>
-              </div>
+              {seatClasses.map((positionClass, index) => {
+                const seat = index + 1;
+                const occupant = rosterBySeat.get(seat);
+                const displayName = occupant?.name || `Waiting for Player ${seat}`;
+                const isYou =
+                  occupant?.name && playerInfo?.name
+                    ? occupant.name === playerInfo.name
+                    : false;
+                const classes = ["player-tag", positionClass];
+
+                if (isYou) {
+                  classes.push("player-tag-self");
+                }
+
+                return (
+                  <div className="game-players-container" key={positionClass}>
+                    <div className={classes.join(" ")}>
+                      <span className="player-label">{`Player ${seat}`}</span>
+                      <span className="player-name">{displayName}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
           <div className="select-rang-container">
@@ -247,13 +347,23 @@ function Game({ socket }: GameEventsProps) {
         </div>
         <div className="messages-and-cards-container">
           <div className="right-side-container messages-container">
-            <h1>Messages</h1>
-            <div className="message-box">
-              <div className="message-content-container">{message}</div>
-              {colorMessage && (
-                <div className="message-content-container">{colorMessage}</div>
+            <div className="messages-header">
+              <h1>Messages</h1>
+              <p className="messages-welcome">{welcomeHeading}</p>
+            </div>
+            {colorMessage && <div className="message-banner">{colorMessage}</div>}
+            <div className="message-box" ref={messageListRef}>
+              {messages.length === 0 ? (
+                <div className="message-placeholder">
+                  Messages will appear here as the game progresses.
+                </div>
+              ) : (
+                messages.map((msg, index) => (
+                  <div key={`${index}-${msg}`} className="message-content-container">
+                    {msg}
+                  </div>
+                ))
               )}
-              <div className="message-content-container">{username}</div>
             </div>
           </div>
           <div className="right-side-container my-cards-container">
